@@ -13,6 +13,13 @@ const Portfolio = () => {
     attachment: null
   });
   const containerRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   const sections = ['Inicio', 'Sobre mí', 'Proyectos', 'Habilidades', 'Contacto', 'Certificados'];
   
@@ -112,6 +119,8 @@ const projects = [
 
   useEffect(() => {
     const handleWheel = (e) => {
+      if (window.innerWidth < 768) return; // No hacer nada en móvil
+
       e.preventDefault();
       if (e.deltaY > 0 && currentSection < sections.length - 1) {
         setCurrentSection(prev => prev + 1);
@@ -405,8 +414,8 @@ const ProjectModal = ({ project, onClose }) => {
     );
   };
 
-  const renderSection = () => {
-    switch (currentSection) {
+  const renderSection = (sectionIndex) => {
+    switch (sectionIndex) {
       case 0: // Inicio
         return (
           <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen px-4">
@@ -763,7 +772,7 @@ const ProjectModal = ({ project, onClose }) => {
   return (
     <div 
       ref={containerRef}
-      className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden"
+      className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white md:overflow-hidden"
     >
       {/* Background Effects */}
       <div className="fixed inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-purple-950/20 pointer-events-none" />
@@ -773,27 +782,41 @@ const ProjectModal = ({ project, onClose }) => {
       <AvailabilityBadge />
       
       {/* Navigation Wheel */}
-      <NavigationWheel />
-      
-      {/* Main Content */}
-      <div 
-        className="transition-all duration-700 ease-in-out"
-        style={{
-          transform: `translateY(-${currentSection * 100}vh)`,
-        }}
-      >
-        {sections.map((_, index) => (
-          <div key={index} className="min-h-screen flex items-center justify-center">
-            {index === currentSection && renderSection()}
-          </div>
-        ))}
+      <div className="hidden md:block">
+        <NavigationWheel />
       </div>
       
-      {/* Scroll Indicator */}
-      {currentSection < sections.length - 1 && (
-        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ChevronDown className="text-blue-400" size={32} />
+      {/* Main Content */}
+      {isMobile ? (
+        <div className="pt-20 px-4">
+          {sections.map((section, index) => (
+            <div key={section} id={`section-${index}`} className="mb-16">
+              {renderSection(index)}
+            </div>
+          ))}
         </div>
+      ) : (
+        <>
+          <div 
+            className="transition-all duration-700 ease-in-out"
+            style={{
+              transform: `translateY(-${currentSection * 100}vh)`,
+            }}
+          >
+            {sections.map((_, index) => (
+              <div key={index} className="h-screen flex items-center justify-center">
+                {index === currentSection && renderSection(index)}
+              </div>
+            ))}
+          </div>
+      
+          {/* Scroll Indicator */}
+          {currentSection < sections.length - 1 && (
+            <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+              <ChevronDown className="text-blue-400" size={32} />
+            </div>
+          )}
+        </>
       )}
       
       {/* Project Modal */}

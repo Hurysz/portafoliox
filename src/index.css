@@ -14,7 +14,13 @@ html {
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  overflow: hidden;
+}
+
+/* Apply hidden overflow only on larger screens for the desktop-like scrolling experience */
+@media (min-width: 768px) {
+  body {
+    overflow: hidden;
+  }
 }
 
 /* Animaciones personalizadas */
